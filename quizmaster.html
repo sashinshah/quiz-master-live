@@ -47,7 +47,8 @@
 <input id="correctAnswer" placeholder="Correct Answer">
 <button onclick="scoreRound()">Award Points</button>
 <p id="roundStatus"></p>
-
+<button onclick="resetRound()">Reset Round</button>
+<button onclick="clearAllData()">End Quiz (Clear Room)</button>
 <hr>
 
 <h3>Player Responses</h3>
@@ -324,6 +325,36 @@ function listenForTeamBoard() {
       });
     });
 }
+
+  /* ---------- RESET ROUND ---------- */
+function resetRound() {
+  if (!currentRoom) return;
+
+  // Remove answers, buzz & close round
+  firebase.database().ref("rooms/" + currentRoom + "/responses").remove();
+  firebase.database().ref("rooms/" + currentRoom + "/buzz").remove();
+  firebase.database().ref("rooms/" + currentRoom + "/round/status").set("closed");
+
+  document.getElementById("roundStatus").innerText =
+    "Round reset. Ready for next question.";
+
+  document.getElementById("correctAnswer").value = "";
+}
+
+/* ---------- CLEAR ENTIRE ROOM ---------- */
+function clearAllData() {
+  if (!currentRoom) return;
+
+  if (!confirm("This will end the quiz and clear the room. Continue?")) {
+    return;
+  }
+
+  firebase.database().ref("rooms/" + currentRoom).remove();
+
+  document.getElementById("roomCode").innerText = "";
+  document.getElementById("roundStatus").innerText = "Quiz ended";
+}
+
 </script>
 
 </body>
