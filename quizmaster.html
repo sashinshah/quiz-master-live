@@ -163,30 +163,6 @@ function listenForTeams() {
     });
 }
 
-/* ---------- PLAYERS ---------- */
-function listenForPlayers() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/players")
-    .on("value", function(snapshot) {
-      var players = snapshot.val() || {};
-      var tbody = document.getElementById("playerList");
-      tbody.innerHTML = "";
-
-      for (var k in players) {
-        var p = players[k];
-        var row = document.createElement("tr");
-
-        ["name","whatsapp","team","score"].forEach(function(key){
-          var td = document.createElement("td");
-          td.innerText = p[key];
-          row.appendChild(td);
-        });
-
-        tbody.appendChild(row);
-      }
-    });
-}
-
 /* ---------- ROUND CONTROL ---------- */
 function startRound() {
   if (!currentRoom) return;
@@ -213,6 +189,30 @@ function closeRound() {
 
   document.getElementById("roundStatus").innerText =
     "Answering CLOSED";
+}
+
+/* ---------- PLAYERS ---------- */
+function listenForPlayers() {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/players")
+    .on("value", function(snapshot) {
+      var players = snapshot.val() || {};
+      var tbody = document.getElementById("playerList");
+      tbody.innerHTML = "";
+
+      for (var k in players) {
+        var p = players[k];
+        var row = document.createElement("tr");
+
+        ["name","whatsapp","team","score"].forEach(function(key){
+          var td = document.createElement("td");
+          td.innerText = p[key];
+          row.appendChild(td);
+        });
+
+        tbody.appendChild(row);
+      }
+    });
 }
 
 /* ---------- RESPONSES ---------- */
