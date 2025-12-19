@@ -500,6 +500,23 @@ function downloadCSV(content, fileName) {
       document.getElementById("buzzSound").play();
     }
   });
+/* ---------- BRANDING ---------- */
+function saveBranding() {
+  if (!currentRoom) return;
+
+  const title = document.getElementById("quizTitle").value;
+  const logo = document.getElementById("logoUrl").value;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/branding")
+    .set({
+      title: title,
+      logo: logo
+    });
+
+  document.getElementById("brandingStatus").innerText =
+    "Branding saved";
+}
 
 </script>
 <audio id="buzzSound">
