@@ -87,25 +87,38 @@ function listenForTeams()
 function listenForPlayers() {
   firebase.database()
     .ref("rooms/" + currentRoom + "/players")
-    .on("value", snapshot => {
+    .on("value", function(snapshot) {
+
       const players = snapshot.val() || {};
       const tbody = document.getElementById("playerList");
       tbody.innerHTML = "";
 
-      Object.values(players).forEach(p => {
+      for (let key in players) {
+        const p = players[key];
         const row = document.createElement("tr");
 
-        row.innerHTML = `
-          <td>${p.name}</td>
-          <td>${p.whatsapp}</td>
-          <td>${p.team}</td>
-          <td>${p.score}</td>
-        `;
+        const td1 = document.createElement("td");
+        td1.innerText = p.name;
+
+        const td2 = document.createElement("td");
+        td2.innerText = p.whatsapp;
+
+        const td3 = document.createElement("td");
+        td3.innerText = p.team;
+
+        const td4 = document.createElement("td");
+        td4.innerText = p.score;
+
+        row.appendChild(td1);
+        row.appendChild(td2);
+        row.appendChild(td3);
+        row.appendChild(td4);
 
         tbody.appendChild(row);
-      });
+      }
     });
 }
+
 
 </script>
 
