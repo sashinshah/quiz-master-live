@@ -108,7 +108,11 @@
   </thead>
   <tbody id="teamBoard"></tbody>
 </table>
+<hr>
 
+<h3>📤 Export Results</h3>
+<button onclick="exportPlayers()">Download Player Results</button>
+<button onclick="exportTeams()">Download Team Results</button>
 <script>
 var currentRoom = null;
 
@@ -353,6 +357,55 @@ function clearAllData() {
 
   document.getElementById("roomCode").innerText = "";
   document.getElementById("roundStatus").innerText = "Quiz ended";
+}
+/* ---------- EXPORT PLAYERS ---------- */
+function exportPlayers() {
+  if (!currentRoom) return;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/players")
+    .once("value", function(snapshot) {
+      const players = snapshot.val() || {};
+      let csv = "Name,WhatsApp,Team,Score\n";
+
+      for (let id in players) {
+        const p = players[id];
+        csv += `"${p.name}","${p.whatsapp}","${p.team}",${p.score}\n`;
+      }
+
+      downloadCSV(csv, "player_results_" + currentRoom + ".csv");
+    });
+}
+
+/* ---------- EXPORT TEAMS ---------- */
+function exportTeams() {
+  if (!currentRoom) return;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams")
+    .once("value", function(snapshot) {
+      const teams = snapshot.val() || {};
+      let csv = "Team,Score\n";
+
+      for (let t in teams) {
+        csv += `"${t}",${teams[t].score}\n`;
+      }
+
+      downloadCSV(csv, "team_results_" + currentRoom + ".csv");
+    });
+}
+
+/* ---------- DOWNLOAD HELPER ---------- */
+function downloadCSV(content, fileName) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 </script>
