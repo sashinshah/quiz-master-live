@@ -294,55 +294,79 @@ function saveBranding(){
 
 /* QUIZ IMPORT */
 function loadQuizFile(){
-  var file=quizFile.files[0];
-  if(!file) return;
-  var reader=new FileReader();
-  reader.onload=e=>{
-    quizData=[];
-    var lines=e.target.result.replace(/\r/g,"").split("\n");
-    for(let i=1;i<lines.length;i++){
-      if(!lines[i]) continue;
-      var p=lines[i].split(",");
-      quizData.push({type:p[0].trim(),question:p[1].trim(),answer:p.slice(2).join(",").trim()});
+  var file = quizFile.files[0];
+  if (!file) {
+    alert("Please select a CSV file");
+    return;
+  }
+
+  var reader = new FileReader();
+  reader.onload = function(e){
+    quizData = [];
+    currentQuestionIndex = -1;
+
+    var lines = e.target.result
+      .replace(/\r/g,"")
+      .split("\n");
+
+    for (var i = 1; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue; // ✅ skip empty lines
+
+      var parts = line.split(",");
+      if (!parts[0] || !parts[1] || !parts[2]) continue; // ✅ skip bad rows
+
+      quizData.push({
+        type: parts[0].trim(),
+        question: parts[1].trim(),
+        answer: parts.slice(2).join(",").trim()
+      });
     }
-    currentQuestionIndex=-1;
-    quizImportStatus.innerText="Loaded "+quizData.length+" questions";
+
+    quizImportStatus.innerText =
+      "Loaded " + quizData.length + " valid questions";
   };
+
   reader.readAsText(file);
 }
-
 function nextQuestion(){
+  if (!quizData.length) {
+    quizImportStatus.innerText = "No questions loaded";
+    return;
+  }
+
   currentQuestionIndex++;
 
-  if(currentQuestionIndex >= quizData.length){
-    quizImportStatus.innerText = "Quiz done";
+  if (currentQuestionIndex >= quizData.length) {
+    quizImportStatus.innerText = "Quiz completed";
     return;
   }
 
   var q = quizData[currentQuestionIndex];
 
-  // ✅ NORMALIZE TYPE
+  if (!q.type) {
+    alert("Skipped empty question at row " + (currentQuestionIndex + 1));
+    nextQuestion(); // 🔁 skip invalid row
+    return;
+  }
+
   var type = q.type.toLowerCase().trim();
 
-  if (type === "mcq" || type === "m") {
-    type = "mcq";
-  } else if (type === "text" || type === "t") {
-    type = "text";
-  } else if (type === "buzz" || type === "b") {
-    type = "buzz";
-  } else {
+  if (type === "mcq" || type === "m") type = "mcq";
+  else if (type === "text" || type === "t") type = "text";
+  else if (type === "buzz" || type === "b") type = "buzz";
+  else {
     alert("Invalid quiz type in CSV: " + q.type);
     return;
   }
 
-  // ✅ FORCE SELECT UPDATE
   roundType.value = type;
-
   questionText.value = q.question;
   correctAnswer.value = q.answer;
 
   quizImportStatus.innerText =
-    "Question " + (currentQuestionIndex + 1) + " (" + type.toUpperCase() + ")";
+    "Question " + (currentQuestionIndex + 1) +
+    " (" + type.toUpperCase() + ")";
 }
 
 </script>
