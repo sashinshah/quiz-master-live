@@ -23,12 +23,18 @@
 <script>
 function createRoom() {
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  // SHOW CODE IMMEDIATELY (mobile-safe)
+  document.getElementById("roomCode").innerText =
+    "Room Code: " + code;
+
+  // THEN save to Firebase
   firebase.database().ref("rooms/" + code).set({
     status: "waiting",
     createdAt: Date.now()
+  }).catch(error => {
+    alert("Firebase error: " + error.message);
   });
-  document.getElementById("roomCode").innerText =
-    "Room Code: " + code;
 }
 </script>
 
