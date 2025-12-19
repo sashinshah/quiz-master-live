@@ -2,111 +2,76 @@
 <html>
 <head>
   <title>Quiz Master</title>
-  <hr>
-
-<input id="quizTitle" placeholder="Quiz Title">
-<br>
-<button onclick="saveBranding()">Save Branding</button>
-
-<p id="brandingStatus"></p>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-  body {
-    background: radial-gradient(circle at top, #1a1a1a, #000);
-    color: #ffffff;
-    font-family: "Segoe UI", Arial, sans-serif;
-  }
+    body {
+      background: radial-gradient(circle at top, #1a1a1a, #000);
+      color: #fff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      padding: 20px;
+    }
+    h2, h3 {
+      border-bottom: 2px solid #333;
+      padding-bottom: 6px;
+      margin-top: 30px;
+    }
+    button {
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    input, select {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin: 6px 0;
+      width: 100%;
+      max-width: 500px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+    th { background:#222; color:#ff9800; }
+    hr { border:none; height:1px; background:#333; margin:30px 0; }
+  </style>
 
-  h2, h3 {
-    margin-top: 30px;
-    border-bottom: 2px solid #333;
-    padding-bottom: 8px;
-  }
-
-  button {
-    background: linear-gradient(135deg, #ff9800, #ff5722);
-    color: #fff;
-    border: none;
-    padding: 14px 22px;
-    margin: 6px 4px;
-    font-size: 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  }
-
-  button:hover {
-    transform: scale(1.05);
-  }
-
-  input, select {
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    margin: 6px 0;
-    width: 100%;
-    max-width: 500px;
-  }
-
-  table {
-    margin-top: 15px;
-    border-collapse: collapse;
-    font-size: 16px;
-  }
-
-  th {
-    background: #222;
-    color: #ff9800;
-    padding: 10px;
-  }
-
-  td {
-    background: #111;
-    padding: 10px;
-    text-align: center;
-  }
-
-  hr {
-    border: none;
-    height: 1px;
-    background: #333;
-    margin: 30px 0;
-  }
-
-  #roundStatus {
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 10px;
-  }
-
-  #roundStatus::before {
-    content: "▶ ";
-    color: #ff9800;
-  }
-</style>
-
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-  <!-- Firebase Config -->
   <script src="firebase.js"></script>
 </head>
 
-<body style="font-family:Arial; padding:20px;">
+<body>
+
+<!-- BRAND HEADER -->
 <div style="display:flex; align-items:center; gap:20px;">
- <img 
-    src="https://i.postimg.cc/63ffG2F0/Sashin-On-Stage.png"
-    alt="SASHIN ON STAGE"
-    style="height:80px; border-radius:12px; box-shadow:0 0 15px rgba(255,152,0,0.6);"
-  >
+  <img src="https://i.postimg.cc/63ffG2F0/Sashin-On-Stage.png"
+       style="height:80px; border-radius:12px;">
   <h2>SASHIN ON STAGE</h2>
 </div>
 
 <hr>
-<h2>Quiz Master Dashboard</h2>
 
+<h3>🎨 Branding</h3>
+<input id="quizTitle" placeholder="Quiz Title">
+<button onclick="saveBranding()">Save Branding</button>
+<p id="brandingStatus"></p>
+
+<hr>
+
+<h2>Quiz Master Dashboard</h2>
 <button onclick="createRoom()">Create Room</button>
 <h3 id="roomCode"></h3>
 
@@ -116,123 +81,86 @@
 <input id="teamName" placeholder="Team Name">
 <button onclick="addTeam()">Add Team</button>
 <ul id="teamList"></ul>
-<hr>
+
 <hr>
 
 <h3>📂 Import Quiz (CSV)</h3>
-
 <input type="file" id="quizFile" accept=".csv">
-<br><br>
-
+<br>
 <button onclick="loadQuizFile()">Load Quiz</button>
 <button onclick="nextQuestion()">Next Question</button>
-
 <p id="quizImportStatus"></p>
 
-<h3>Round Control</h3>
+<hr>
 
+<h3>Round Control</h3>
 <select id="roundType">
-  <option value="mcq">MCQ (A / B / C / D)</option>
-  <option value="text">Type the Answer</option>
+  <option value="mcq">MCQ</option>
+  <option value="text">Text</option>
   <option value="buzz">Buzz</option>
 </select>
 
-<br><br>
-
-<input id="questionText" placeholder="Enter Question" style="width:100%;">
-
-<br><br>
-
-<button onclick="startRound()">Open Answering</button>
-<button onclick="closeRound()">Close Answering</button>
-
+<input id="questionText" placeholder="Question">
 <input id="correctAnswer" placeholder="Correct Answer">
-<button onclick="scoreRound()">Award Points</button>
-<p id="roundStatus"></p>
-<button onclick="resetRound()">Reset Round</button>
-<button onclick="clearAllData()">End Quiz (Clear Room)</button>
-<hr>
-
-<h3>Player Responses</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Player</th>
-      <th>Team</th>
-      <th>Answer</th>
-    </tr>
-  </thead>
-  <tbody id="responseList"></tbody>
-</table>
 
 <br>
+<button onclick="startRound()">Open Answering</button>
+<button onclick="closeRound()">Close Answering</button>
+<button onclick="scoreRound()">Award Points</button>
+<button onclick="resetRound()">Reset Round</button>
+<button onclick="clearAllData()">End Quiz</button>
+
+<p id="roundStatus"></p>
+
 <hr>
 
 <h3>Players Joined</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>WhatsApp</th>
-      <th>Team</th>
-      <th>Score</th>
-    </tr>
-  </thead>
-  <tbody id="playerList"></tbody>
+<table>
+<thead><tr><th>Name</th><th>WhatsApp</th><th>Team</th><th>Score</th></tr></thead>
+<tbody id="playerList"></tbody>
 </table>
 
+<hr>
 
-<p id="scoreStatus"></p>
+<h3>Player Responses</h3>
+<table>
+<thead><tr><th>Player</th><th>Team</th><th>Answer</th></tr></thead>
+<tbody id="responseList"></tbody>
+</table>
 
 <hr>
 
 <h3>🏆 Player Leaderboard</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Player</th>
-      <th>Team</th>
-      <th>Score</th>
-    </tr>
-  </thead>
-  <tbody id="playerBoard"></tbody>
+<table>
+<thead><tr><th>Name</th><th>Team</th><th>Score</th></tr></thead>
+<tbody id="playerBoard"></tbody>
 </table>
-
-<br>
 
 <h3>🏆 Team Leaderboard</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Team</th>
-      <th>Total Score</th>
-    </tr>
-  </thead>
-  <tbody id="teamBoard"></tbody>
+<table>
+<thead><tr><th>Team</th><th>Score</th></tr></thead>
+<tbody id="teamBoard"></tbody>
 </table>
+
 <hr>
 
-<h3>📤 Export Results</h3>
-<button onclick="exportPlayers()">Download Player Results</button>
-<button onclick="exportTeams()">Download Team Results</button>
+<h3>📤 Export</h3>
+<button onclick="exportPlayers()">Players CSV</button>
+<button onclick="exportTeams()">Teams CSV</button>
+
 <script>
+/* GLOBALS */
+var currentRoom = null;
 var quizData = [];
 var currentQuestionIndex = -1;
-var currentRoom = null;
 
-/* ---------- CREATE ROOM ---------- */
+/* ROOM */
 function createRoom() {
-  var code = Math.random().toString(36).substring(2, 6).toUpperCase();
-  currentRoom = code;
+  currentRoom = Math.random().toString(36).substring(2,6).toUpperCase();
+  document.getElementById("roomCode").innerText = "Room: " + currentRoom;
 
-  document.getElementById("roomCode").innerText =
-    "Room Code: " + code;
-
-  firebase.database().ref("rooms/" + code).set({
-    status: "waiting",
-    createdAt: Date.now(),
-    teams: {},
-    players: {}
+  firebase.database().ref("rooms/"+currentRoom).set({
+    teams:{}, players:{}
   });
 
   listenForTeams();
@@ -242,430 +170,156 @@ function createRoom() {
   listenForTeamBoard();
 }
 
-/* ---------- TEAMS ---------- */
+/* TEAMS */
 function addTeam() {
-  var name = document.getElementById("teamName").value.trim();
-  if (!name || !currentRoom) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/teams/" + name)
-    .set({ score: 0 });
-
-  document.getElementById("teamName").value = "";
+  var name = teamName.value.trim();
+  if(!name || !currentRoom) return;
+  firebase.database().ref("rooms/"+currentRoom+"/teams/"+name).set({score:0});
+  teamName.value="";
 }
 
-function listenForTeams() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/teams")
-    .on("value", function(snapshot) {
-      var teams = snapshot.val() || {};
-      var ul = document.getElementById("teamList");
-      ul.innerHTML = "";
-
-      for (var t in teams) {
-        var li = document.createElement("li");
-        li.innerText = t;
-        ul.appendChild(li);
-      }
-    });
+function listenForTeams(){
+  firebase.database().ref("rooms/"+currentRoom+"/teams").on("value",s=>{
+    teamList.innerHTML="";
+    var t=s.val()||{};
+    for(let k in t){ teamList.innerHTML+="<li>"+k+"</li>"; }
+  });
 }
 
-/* ---------- ROUND CONTROL ---------- */
-function startRound() {
-  if (!currentRoom) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/round")
-    .set({
-      type: document.getElementById("roundType").value,
-      question: document.getElementById("questionText").value,
-      status: "open",
-      startedAt: Date.now()
-    });
-
-  document.getElementById("roundStatus").innerText =
-    "Answering OPEN";
+/* ROUND */
+function startRound(){
+  firebase.database().ref("rooms/"+currentRoom+"/round").set({
+    type:roundType.value,
+    question:questionText.value,
+    status:"open"
+  });
+  roundStatus.innerText="OPEN";
+}
+function closeRound(){
+  firebase.database().ref("rooms/"+currentRoom+"/round/status").set("closed");
+  roundStatus.innerText="CLOSED";
+}
+function resetRound(){
+  firebase.database().ref("rooms/"+currentRoom+"/responses").remove();
+  roundStatus.innerText="RESET";
 }
 
-function closeRound() {
-  if (!currentRoom) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/round/status")
-    .set("closed");
-
-  document.getElementById("roundStatus").innerText =
-    "Answering CLOSED";
-}
-
-/* ---------- PLAYERS ---------- */
-function listenForPlayers() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/players")
-    .on("value", function(snapshot) {
-      var players = snapshot.val() || {};
-      var tbody = document.getElementById("playerList");
-      tbody.innerHTML = "";
-
-      for (var k in players) {
-        var p = players[k];
-        var row = document.createElement("tr");
-
-        ["name","whatsapp","team","score"].forEach(function(key){
-          var td = document.createElement("td");
-          td.innerText = p[key];
-          row.appendChild(td);
-        });
-
-        tbody.appendChild(row);
-      }
-    });
-}
-
-/* ---------- RESPONSES ---------- */
-function listenForResponses() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/responses")
-    .on("value", function(snapshot) {
-      var responses = snapshot.val() || {};
-      var tbody = document.getElementById("responseList");
-      tbody.innerHTML = "";
-
-      for (var k in responses) {
-        var r = responses[k];
-        var row = document.createElement("tr");
-
-        ["player","team","answer"].forEach(function(field){
-          var td = document.createElement("td");
-          td.innerText =
-            field === "player" ? "Player" : r[field];
-          row.appendChild(td);
-        });
-
-        tbody.appendChild(row);
-      }
-    });
-}
-
-/* ---------- SCORING ---------- */
-function scoreRound() {
-  var correct = document.getElementById("correctAnswer").value.trim().toLowerCase();
-  if (!correct) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/responses")
-    .once("value", function(snapshot) {
-      var responses = snapshot.val() || {};
-
-      for (var pid in responses) {
-        if (
-          String(responses[pid].answer).toLowerCase() === correct
-        ) {
-          awardPoints(pid, responses[pid].team);
-        }
-      }
-
-      document.getElementById("scoreStatus").innerText =
-        "Scoring completed";
-    });
-}
-
-function awardPoints(playerId, team) {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/players/" + playerId + "/score")
-    .transaction(function(s){ return (s || 0) + 10; });
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/teams/" + team + "/score")
-    .transaction(function(s){ return (s || 0) + 10; });
-}
-
-/* ---------- LEADERBOARDS ---------- */
-function listenForPlayerBoard() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/players")
-    .on("value", function(snapshot) {
-      var players = snapshot.val() || {};
-      var list = Object.values(players)
-        .sort(function(a,b){ return b.score - a.score; });
-
-      var tbody = document.getElementById("playerBoard");
-      tbody.innerHTML = "";
-
-      list.forEach(function(p){
-        var row = document.createElement("tr");
-        ["name","team","score"].forEach(function(k){
-          var td = document.createElement("td");
-          td.innerText = p[k];
-          row.appendChild(td);
-        });
-        tbody.appendChild(row);
-      });
-    });
-}
-
-function listenForTeamBoard() {
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/teams")
-    .on("value", function(snapshot) {
-      var teams = snapshot.val() || {};
-      var list = Object.keys(teams)
-        .map(function(t){
-          return { name:t, score:teams[t].score };
-        })
-        .sort(function(a,b){ return b.score - a.score; });
-
-      var tbody = document.getElementById("teamBoard");
-      tbody.innerHTML = "";
-
-      list.forEach(function(t){
-        var row = document.createElement("tr");
-
-        var td1 = document.createElement("td");
-        td1.innerText = t.name;
-
-        var td2 = document.createElement("td");
-        td2.innerText = t.score;
-
-        row.appendChild(td1);
-        row.appendChild(td2);
-        tbody.appendChild(row);
-      });
-    });
-}
-
-  /* ---------- RESET ROUND ---------- */
-function resetRound() {
-  if (!currentRoom) return;
-
-  // Remove answers, buzz & close round
-  firebase.database().ref("rooms/" + currentRoom + "/responses").remove();
-  firebase.database().ref("rooms/" + currentRoom + "/buzz").remove();
-  firebase.database().ref("rooms/" + currentRoom + "/round/status").set("closed");
-
-  document.getElementById("roundStatus").innerText =
-    "Round reset. Ready for next question.";
-
-  document.getElementById("correctAnswer").value = "";
-}
-
-/* ---------- CLEAR ENTIRE ROOM ---------- */
-function clearAllData() {
-  if (!currentRoom) return;
-
-  if (!confirm("This will end the quiz and clear the room. Continue?")) {
-    return;
-  }
-
-  firebase.database().ref("rooms/" + currentRoom).remove();
-
-  document.getElementById("roomCode").innerText = "";
-  document.getElementById("roundStatus").innerText = "Quiz ended";
-}
-/* ---------- EXPORT PLAYERS ---------- */
-function exportPlayers() {
-  if (!currentRoom) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/players")
-    .once("value", function(snapshot) {
-      const players = snapshot.val() || {};
-      let csv = "Name,WhatsApp,Team,Score\n";
-
-      for (let id in players) {
-        const p = players[id];
-        csv += `"${p.name}","${p.whatsapp}","${p.team}",${p.score}\n`;
-      }
-
-      downloadCSV(csv, "player_results_" + currentRoom + ".csv");
-    });
-}
-
-/* ---------- EXPORT TEAMS ---------- */
-function exportTeams() {
-  if (!currentRoom) return;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/teams")
-    .once("value", function(snapshot) {
-      const teams = snapshot.val() || {};
-      let csv = "Team,Score\n";
-
-      for (let t in teams) {
-        csv += `"${t}",${teams[t].score}\n`;
-      }
-
-      downloadCSV(csv, "team_results_" + currentRoom + ".csv");
-    });
-}
-
-/* ---------- DOWNLOAD HELPER ---------- */
-function downloadCSV(content, fileName) {
-  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-/* ---------- BRANDING ---------- */
-function saveBranding() {
-  if (!currentRoom) return;
-
-  const title = document.getElementById("quizTitle").value;
-  const logo = document.getElementById("logoUrl").value;
-
-  firebase.database()
-    .ref("rooms/" + currentRoom + "/branding")
-    .set({
-      title: title,
-      logo: logo
-    });
-
-  document.getElementById("brandingStatus").innerText =
-    "Branding saved";
-}
-/* ---------- QUIZ IMPORT ---------- */
-let quizData = [];
-let currentQuestionIndex = -1;
-
-function loadQuizFile() {
-  const input = document.getElementById("quizFile");
-  if (!input.files || !input.files.length) {
-    alert("Please select a CSV file first");
-    return;
-  }
-
-  const file = input.files[0];
-  const reader = new FileReader();
-
-  reader.onload = function (e) {
-    let text = e.target.result;
-
-    // 🔒 Normalize file
-    text = text.replace(/\r/g, "").trim();
-
-    const lines = text.split("\n");
-    quizData = [];
-
-    if (lines.length < 2) {
-      alert("CSV has no data rows");
-      return;
+/* PLAYERS */
+function listenForPlayers(){
+  firebase.database().ref("rooms/"+currentRoom+"/players").on("value",s=>{
+    playerList.innerHTML="";
+    var p=s.val()||{};
+    for(let k in p){
+      playerList.innerHTML+=`<tr><td>${p[k].name}</td><td>${p[k].whatsapp}</td><td>${p[k].team}</td><td>${p[k].score||0}</td></tr>`;
     }
+  });
+}
 
-    // Skip header row (index 0)
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-
-      const parts = lines[i].split(",");
-
-      if (parts.length < 3) continue;
-
-      quizData.push({
-        type: parts[0].trim(),
-        question: parts[1].trim(),
-        answer: parts.slice(2).join(",").trim() // handles commas in answer
-      });
+/* RESPONSES */
+function listenForResponses(){
+  firebase.database().ref("rooms/"+currentRoom+"/responses").on("value",s=>{
+    responseList.innerHTML="";
+    var r=s.val()||{};
+    for(let k in r){
+      responseList.innerHTML+=`<tr><td>Player</td><td>${r[k].team}</td><td>${r[k].answer}</td></tr>`;
     }
+  });
+}
 
-    currentQuestionIndex = -1;
+/* SCORING */
+function scoreRound(){
+  var correct = correctAnswer.value.toLowerCase();
+  firebase.database().ref("rooms/"+currentRoom+"/responses").once("value",s=>{
+    var r=s.val()||{};
+    for(let k in r){
+      if(r[k].answer.toLowerCase()===correct){
+        firebase.database().ref("rooms/"+currentRoom+"/players/"+k+"/score").transaction(v=>(v||0)+10);
+        firebase.database().ref("rooms/"+currentRoom+"/teams/"+r[k].team+"/score").transaction(v=>(v||0)+10);
+      }
+    }
+  });
+}
 
-    document.getElementById("quizImportStatus").innerText =
-      "Loaded " + quizData.length + " questions";
+/* LEADERBOARDS */
+function listenForPlayerBoard(){
+  firebase.database().ref("rooms/"+currentRoom+"/players").on("value",s=>{
+    playerBoard.innerHTML="";
+    var p=Object.values(s.val()||{}).sort((a,b)=>(b.score||0)-(a.score||0));
+    p.forEach(x=>playerBoard.innerHTML+=`<tr><td>${x.name}</td><td>${x.team}</td><td>${x.score||0}</td></tr>`);
+  });
+}
+function listenForTeamBoard(){
+  firebase.database().ref("rooms/"+currentRoom+"/teams").on("value",s=>{
+    teamBoard.innerHTML="";
+    var t=s.val()||{};
+    for(let k in t){
+      teamBoard.innerHTML+=`<tr><td>${k}</td><td>${t[k].score||0}</td></tr>`;
+    }
+  });
+}
+
+/* EXPORT */
+function exportPlayers(){
+  firebase.database().ref("rooms/"+currentRoom+"/players").once("value",s=>{
+    let csv="Name,WhatsApp,Team,Score\n";
+    var p=s.val()||{};
+    for(let k in p){
+      csv+=`${p[k].name},${p[k].whatsapp},${p[k].team},${p[k].score||0}\n`;
+    }
+    downloadCSV(csv,"players.csv");
+  });
+}
+function exportTeams(){
+  firebase.database().ref("rooms/"+currentRoom+"/teams").once("value",s=>{
+    let csv="Team,Score\n";
+    var t=s.val()||{};
+    for(let k in t){ csv+=`${k},${t[k].score||0}\n`; }
+    downloadCSV(csv,"teams.csv");
+  });
+}
+function downloadCSV(c,f){
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([c],{type:"text/csv"}));
+  a.download=f; a.click();
+}
+
+/* BRANDING */
+function saveBranding(){
+  if(!currentRoom) return;
+  firebase.database().ref("rooms/"+currentRoom+"/branding").set({
+    title:quizTitle.value
+  });
+  brandingStatus.innerText="Saved";
+}
+
+/* QUIZ IMPORT */
+function loadQuizFile(){
+  var file=quizFile.files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=e=>{
+    quizData=[];
+    var lines=e.target.result.replace(/\r/g,"").split("\n");
+    for(let i=1;i<lines.length;i++){
+      if(!lines[i]) continue;
+      var p=lines[i].split(",");
+      quizData.push({type:p[0].trim(),question:p[1].trim(),answer:p.slice(2).join(",").trim()});
+    }
+    currentQuestionIndex=-1;
+    quizImportStatus.innerText="Loaded "+quizData.length+" questions";
   };
-
-  reader.onerror = function () {
-    alert("Failed to read file");
-  };
-
   reader.readAsText(file);
 }
 
-  const file = document.getElementById("quizFile").files[0];
-  if (!file)
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split("\n");
-    quizData = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const parts = lines[i].split(",");
-      if (parts.length < 3) continue;
-
-      quizData.push({
-        type: parts[0].trim().toLowerCase(),
-        question: parts[1].trim(),
-        answer: parts[2].trim()
-      });
-    }
-
-    currentQuestionIndex = -1;
-    document.getElementById("quizImportStatus").innerText =
-      quizData.length + " questions loaded";
-  };
-
-  reader.readAsText(file);
-}
-
-function nextQuestion() {
-
+function nextQuestion(){
   currentQuestionIndex++;
-  if (currentQuestionIndex >= quizData.length) {
-    document.getElementById("quizImportStatus").innerText =
-      "Quiz completed";
-    return;
-  }
-
-  const q = quizData[currentQuestionIndex];
-
-  // 🔒 NORMALIZE TYPE
-  let type = q.type.toLowerCase().trim();
-
-  if (type === "mcq" || type === "m") type = "mcq";
-  else if (type === "text" || type === "t") type = "text";
-  else if (type === "buzz" || type === "b") type = "buzz";
-  else {
-    alert("Invalid question type in CSV: " + q.type);
-    return;
-  }
-
-  document.getElementById("roundType").value = type;
-  document.getElementById("questionText").value = q.question;
-  document.getElementById("correctAnswer").value = q.answer;
-
-  document.getElementById("quizImportStatus").innerText =
-    "Question " + (currentQuestionIndex + 1) +
-    " (" + type.toUpperCase() + ")";
+  if(currentQuestionIndex>=quizData.length){ quizImportStatus.innerText="Quiz done"; return; }
+  var q=quizData[currentQuestionIndex];
+  roundType.value=q.type;
+  questionText.value=q.question;
+  correctAnswer.value=q.answer;
 }
-
-  if (!quizData.length) return;
-
-  currentQuestionIndex++;
-  if (currentQuestionIndex >= quizData.length) {
-    document.getElementById("quizImportStatus").innerText =
-      "Quiz completed";
-    return;
-  }
-
-  const q = quizData[currentQuestionIndex];
-
-  document.getElementById("roundType").value = q.type;
-  document.getElementById("questionText").value = q.question;
-  document.getElementById("correctAnswer").value = q.answer;
-
-  document.getElementById("quizImportStatus").innerText =
-    "Question " + (currentQuestionIndex + 1);
-}
-
 </script>
-<audio id="buzzSound">
-  <source src="https://assets.mixkit.co/active_storage/sfx/2067/2067-preview.mp3" type="audio/mpeg">
-</audio>
 
 </body>
 </html>
