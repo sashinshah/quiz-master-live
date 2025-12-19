@@ -539,6 +539,57 @@ let quizData = [];
 let currentQuestionIndex = -1;
 
 function loadQuizFile() {
+  const input = document.getElementById("quizFile");
+  if (!input.files || !input.files.length) {
+    alert("Please select a CSV file first");
+    return;
+  }
+
+  const file = input.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    let text = e.target.result;
+
+    // 🔒 Normalize file
+    text = text.replace(/\r/g, "").trim();
+
+    const lines = text.split("\n");
+    quizData = [];
+
+    if (lines.length < 2) {
+      alert("CSV has no data rows");
+      return;
+    }
+
+    // Skip header row (index 0)
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+
+      const parts = lines[i].split(",");
+
+      if (parts.length < 3) continue;
+
+      quizData.push({
+        type: parts[0].trim(),
+        question: parts[1].trim(),
+        answer: parts.slice(2).join(",").trim() // handles commas in answer
+      });
+    }
+
+    currentQuestionIndex = -1;
+
+    document.getElementById("quizImportStatus").innerText =
+      "Loaded " + quizData.length + " questions";
+  };
+
+  reader.onerror = function () {
+    alert("Failed to read file");
+  };
+
+  reader.readAsText(file);
+}
+
   const file = document.getElementById("quizFile").files[0];
   if (!file) return;
 
