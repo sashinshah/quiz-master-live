@@ -40,6 +40,26 @@
   </thead>
   <tbody id="playerList"></tbody>
 </table>
+<hr>
+
+<h3>Round Control</h3>
+
+<select id="roundType">
+  <option value="mcq">MCQ (A / B / C / D)</option>
+  <option value="text">Type the Answer</option>
+  <option value="buzz">Buzz</option>
+</select>
+
+<br><br>
+
+<input id="questionText" placeholder="Enter Question" style="width:100%;">
+
+<br><br>
+
+<button onclick="startRound()">Open Answering</button>
+<button onclick="closeRound()">Close Answering</button>
+
+<p id="roundStatus"></p>
 
 <script>
 var currentRoom = null;
@@ -125,6 +145,37 @@ function listenForPlayers() {
       }
     });
 }
+  /* ---------- ROUND CONTROL ---------- */
+function startRound() {
+  if (!currentRoom) return;
+
+  var type = document.getElementById("roundType").value;
+  var question = document.getElementById("questionText").value;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/round")
+    .set({
+      type: type,
+      question: question,
+      status: "open",
+      startedAt: Date.now()
+    });
+
+  document.getElementById("roundStatus").innerText =
+    "Answering OPEN";
+}
+
+function closeRound() {
+  if (!currentRoom) return;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/round/status")
+    .set("closed");
+
+  document.getElementById("roundStatus").innerText =
+    "Answering CLOSED";
+}
+
 </script>
 
 </body>
