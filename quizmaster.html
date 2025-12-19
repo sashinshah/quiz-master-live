@@ -98,9 +98,11 @@ function createRoom() {
     teams: {},
     players: {}
   });
-  listenForResponses();
   listenForTeams();
   listenForPlayers();
+  listenForResponses();
+  listenForPlayerBoard();
+  listenForTeamBoard();
 }
 
 /* ---------- TEAMS ---------- */
@@ -224,6 +226,32 @@ function listenForResponses() {
       }
     });
 }
+<hr>
+
+<h3>🏆 Player Leaderboard</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Team</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody id="playerBoard"></tbody>
+</table>
+
+<br>
+
+<h3>🏆 Team Leaderboard</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Team</th>
+      <th>Total Score</th>
+    </tr>
+  </thead>
+  <tbody id="teamBoard"></tbody>
+</table>
 
 /* ---------- GET PLAYER NAME ---------- */
 function getPlayerName(id) {
@@ -273,6 +301,81 @@ function awardPoints(playerId, team) {
   teamRef.transaction(function(score) {
     return (score || 0) + 10;
   });
+}
+/* ---------- PLAYER LEADERBOARD ---------- */
+function listenForPlayerBoard() {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/players")
+    .on("value", function(snapshot) {
+      const players = snapshot.val() || {};
+      const list = [];
+
+      for (var id in players) {
+        list.push(players[id]);
+      }
+
+      list.sort(function(a, b) {
+        return b.score - a.score;
+      });
+
+      const tbody = document.getElementById("playerBoard");
+      tbody.innerHTML = "";
+
+      list.forEach(function(p) {
+        const row = document.createElement("tr");
+
+        const td1 = document.createElement("td");
+        td1.innerText = p.name;
+
+        const td2 = document.createElement("td");
+        td2.innerText = p.team;
+
+        const td3 = document.createElement("td");
+        td3.innerText = p.score;
+
+        row.appendChild(td1);
+        row.appendChild(td2);
+        row.appendChild(td3);
+
+        tbody.appendChild(row);
+      });
+    });
+}
+
+/* ---------- TEAM LEADERBOARD ---------- */
+function listenForTeamBoard() {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams")
+    .on("value", function(snapshot) {
+      const teams = snapshot.val() || {};
+      const list = [];
+
+      for (var t in teams) {
+        list.push({ name: t, score: teams[t].score });
+      }
+
+      list.sort(function(a, b) {
+        return b.score - a.score;
+      });
+
+      const tbody = document.getElementById("teamBoard");
+      tbody.innerHTML = "";
+
+      list.forEach(function(t) {
+        const row = document.createElement("tr");
+
+        const td1 = document.createElement("td");
+        td1.innerText = t.name;
+
+        const td2 = document.createElement("td");
+        td2.innerText = t.score;
+
+        row.appendChild(td1);
+        row.appendChild(td2);
+
+        tbody.appendChild(row);
+      });
+    });
 }
 
 </script>
