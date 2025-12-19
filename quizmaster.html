@@ -216,6 +216,8 @@
 <button onclick="exportPlayers()">Download Player Results</button>
 <button onclick="exportTeams()">Download Team Results</button>
 <script>
+var quizData = [];
+var currentQuestionIndex = -1;
 var currentRoom = null;
 
 /* ---------- CREATE ROOM ---------- */
@@ -510,12 +512,6 @@ function downloadCSV(content, fileName) {
   document.body.removeChild(link);
 }
 
-  firebase.database()
-  .ref("rooms/" + currentRoom + "/buzz")
-  .on("value", function(snapshot) {
-    if (snapshot.exists()) {
-      document.getElementById("buzzSound").play();
-    }
   });
 /* ---------- BRANDING ---------- */
 function saveBranding() {
