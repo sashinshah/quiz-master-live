@@ -578,6 +578,37 @@ function nextQuestion() {
 
   const q = quizData[currentQuestionIndex];
 
+  // 🔒 NORMALIZE TYPE
+  let type = q.type.toLowerCase().trim();
+
+  if (type === "mcq" || type === "m") type = "mcq";
+  else if (type === "text" || type === "t") type = "text";
+  else if (type === "buzz" || type === "b") type = "buzz";
+  else {
+    alert("Invalid question type in CSV: " + q.type);
+    return;
+  }
+
+  document.getElementById("roundType").value = type;
+  document.getElementById("questionText").value = q.question;
+  document.getElementById("correctAnswer").value = q.answer;
+
+  document.getElementById("quizImportStatus").innerText =
+    "Question " + (currentQuestionIndex + 1) +
+    " (" + type.toUpperCase() + ")";
+}
+
+  if (!quizData.length) return;
+
+  currentQuestionIndex++;
+  if (currentQuestionIndex >= quizData.length) {
+    document.getElementById("quizImportStatus").innerText =
+      "Quiz completed";
+    return;
+  }
+
+  const q = quizData[currentQuestionIndex];
+
   document.getElementById("roundType").value = q.type;
   document.getElementById("questionText").value = q.question;
   document.getElementById("correctAnswer").value = q.answer;
