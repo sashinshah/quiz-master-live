@@ -47,21 +47,25 @@ function createRoom() {
 }
 
 function addTeam() {
+  alert("Add Team button clicked");
+
   const name = document.getElementById("teamName").value.trim();
-  if (!name) {
-    alert("Enter team name");
-    return;
-  }
+  alert("Team name: " + name);
+
   if (!currentRoom) {
-    alert("Create room first");
+    alert("Room not created yet");
     return;
   }
 
   firebase.database()
     .ref("rooms/" + currentRoom + "/teams/" + name)
-    .set({ score: 0 });
-
-  document.getElementById("teamName").value = "";
+    .set({ score: 0 })
+    .then(() => {
+      alert("Team saved to Firebase");
+    })
+    .catch(err => {
+      alert("Firebase error: " + err.message);
+    });
 }
 
 function listenForTeams() {
