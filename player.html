@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="firebase.js"></script>
+</head>
+<body style="font-family:Arial; text-align:center; padding:20px;">
+
+<h2>Join Quiz</h2>
+
+<input id="code" placeholder="Room Code"><br><br>
+<input id="name" placeholder="Your Name"><br><br>
+<input id="whatsapp" placeholder="WhatsApp Number"><br><br>
+
+<button onclick="joinRoom()">Join</button>
+
+<p id="status"></p>
+
+<script>
+function joinRoom() {
+  const code = document.getElementById("code").value.toUpperCase();
+  const name = document.getElementById("name").value;
+  const whatsapp = document.getElementById("whatsapp").value;
+
+  const playerId = Date.now();
+
+  firebase.database().ref("rooms/" + code + "/players/" + playerId).set({
+    name,
+    whatsapp,
+    score: 0
+  }).then(() => {
+    document.getElementById("status").innerText =
+      "Joined Successfully!";
+  }).catch(() => {
+    document.getElementById("status").innerText =
+      "Invalid Room Code";
+  });
+}
+</script>
+
+</body>
+</html>
