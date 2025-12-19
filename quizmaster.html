@@ -19,23 +19,52 @@
 <button onclick="createRoom()">Create New Room</button>
 
 <h3 id="roomCode"></h3>
+<hr>
 
+<h3>Create Teams</h3>
+
+<input id="teamName" placeholder="Team Name">
+<button onclick="addTeam()">Add Team</button>
+
+<ul id="teamList"></ul>
 <script>
+let currentRoom = "";
+
 function createRoom() {
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+  currentRoom = code;
 
-  // SHOW CODE IMMEDIATELY (mobile-safe)
   document.getElementById("roomCode").innerText =
     "Room Code: " + code;
 
-  // THEN save to Firebase
   firebase.database().ref("rooms/" + code).set({
     status: "waiting",
     createdAt: Date.now()
-  }).catch(error => {
-    alert("Firebase error: " + error.message);
   });
 }
+
+function addTeam() {
+  const name = document.getElementById("teamName").value;
+  if (!name || !currentRoom) return;
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams/" + name)
+    .set({ score: 0 });
+
+  document.getElementById("teamName").value = "";
+}
+
+firebase.database().ref("rooms").on("value", snapshot => {
+  if (!currentRoom) return;
+  const teams = snapshot.val()?.[currentRoom]?.teams || {};
+  const list = document.getElementById("teamList");
+  list.innerHTML = "";
+  Object.keys(teams).forEach(team => {
+    const li = document.createElement("li");
+    li.innerText = team;
+    list.appendChild(li);
+  });
+});
 </script>
 
 </body>
