@@ -313,12 +313,38 @@ function loadQuizFile(){
 
 function nextQuestion(){
   currentQuestionIndex++;
-  if(currentQuestionIndex>=quizData.length){ quizImportStatus.innerText="Quiz done"; return; }
-  var q=quizData[currentQuestionIndex];
-  roundType.value=q.type;
-  questionText.value=q.question;
-  correctAnswer.value=q.answer;
+
+  if(currentQuestionIndex >= quizData.length){
+    quizImportStatus.innerText = "Quiz done";
+    return;
+  }
+
+  var q = quizData[currentQuestionIndex];
+
+  // ✅ NORMALIZE TYPE
+  var type = q.type.toLowerCase().trim();
+
+  if (type === "mcq" || type === "m") {
+    type = "mcq";
+  } else if (type === "text" || type === "t") {
+    type = "text";
+  } else if (type === "buzz" || type === "b") {
+    type = "buzz";
+  } else {
+    alert("Invalid quiz type in CSV: " + q.type);
+    return;
+  }
+
+  // ✅ FORCE SELECT UPDATE
+  roundType.value = type;
+
+  questionText.value = q.question;
+  correctAnswer.value = q.answer;
+
+  quizImportStatus.innerText =
+    "Question " + (currentQuestionIndex + 1) + " (" + type.toUpperCase() + ")";
 }
+
 </script>
 
 </body>
