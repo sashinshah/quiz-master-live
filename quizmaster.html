@@ -12,25 +12,24 @@
   <script src="firebase.js"></script>
 </head>
 
-<body style="font-family:Arial; text-align:center; padding:20px;">
+<body style="font-family:Arial; padding:20px;">
 
 <h2>Quiz Master Dashboard</h2>
 
-<button onclick="createRoom()">Create New Room</button>
-
+<button onclick="createRoom()">Create Room</button>
 <h3 id="roomCode"></h3>
+
 <hr>
 
 <h3>Create Teams</h3>
-
 <input id="teamName" placeholder="Team Name">
 <button onclick="addTeam()">Add Team</button>
-
 <ul id="teamList"></ul>
+
 <hr>
 
 <h3>Players Joined</h3>
-<table border="1" width="100%" style="border-collapse:collapse;">
+<table border="1" width="100%">
   <thead>
     <tr>
       <th>Name</th>
@@ -43,10 +42,11 @@
 </table>
 
 <script>
-let currentRoom = null;
+var currentRoom = null;
 
+/* ---------- CREATE ROOM ---------- */
 function createRoom() {
-  const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+  var code = Math.random().toString(36).substring(2, 6).toUpperCase();
   currentRoom = code;
 
   document.getElementById("roomCode").innerText =
@@ -55,58 +55,65 @@ function createRoom() {
   firebase.database().ref("rooms/" + code).set({
     status: "waiting",
     createdAt: Date.now(),
-    teams: {}
+    teams: {},
+    players: {}
   });
-    listenForTeams();
-    listenForPlayers();
+
+  listenForTeams();
+  listenForPlayers();
 }
 
+/* ---------- TEAMS ---------- */
 function addTeam() {
-  alert("Add Team button clicked");
-
-  const name = document.getElementById("teamName").value.trim();
-  alert("Team name: " + name);
-
-  if (!currentRoom) {
-    alert("Room not created yet");
-    return;
-  }
+  var name = document.getElementById("teamName").value.trim();
+  if (!name || !currentRoom) return;
 
   firebase.database()
     .ref("rooms/" + currentRoom + "/teams/" + name)
-    .set({ score: 0 })
-    .then(() => {
-      alert("Team saved to Firebase");
-    })
-    .catch(err => {
-      alert("Firebase error: " + err.message);
+    .set({ score: 0 });
+
+  document.getElementById("teamName").value = "";
+}
+
+function listenForTeams() {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams")
+    .on("value", function(snapshot) {
+      var teams = snapshot.val() || {};
+      var ul = document.getElementById("teamList");
+      ul.innerHTML = "";
+
+      for (var t in teams) {
+        var li = document.createElement("li");
+        li.innerText = t;
+        ul.appendChild(li);
+      }
     });
 }
 
-function listenForTeams() 
+/* ---------- PLAYERS ---------- */
 function listenForPlayers() {
   firebase.database()
     .ref("rooms/" + currentRoom + "/players")
     .on("value", function(snapshot) {
-
-      const players = snapshot.val() || {};
-      const tbody = document.getElementById("playerList");
+      var players = snapshot.val() || {};
+      var tbody = document.getElementById("playerList");
       tbody.innerHTML = "";
 
-      for (let key in players) {
-        const p = players[key];
-        const row = document.createElement("tr");
+      for (var k in players) {
+        var p = players[k];
+        var row = document.createElement("tr");
 
-        const td1 = document.createElement("td");
+        var td1 = document.createElement("td");
         td1.innerText = p.name;
 
-        const td2 = document.createElement("td");
+        var td2 = document.createElement("td");
         td2.innerText = p.whatsapp;
 
-        const td3 = document.createElement("td");
+        var td3 = document.createElement("td");
         td3.innerText = p.team;
 
-        const td4 = document.createElement("td");
+        var td4 = document.createElement("td");
         td4.innerText = p.score;
 
         row.appendChild(td1);
@@ -118,10 +125,7 @@ function listenForPlayers() {
       }
     });
 }
-
-
 </script>
-
 
 </body>
 </html>
