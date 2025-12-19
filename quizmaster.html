@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Master</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="firebase.js"></script>
+</head>
+<body style="font-family:Arial; text-align:center; padding:20px;">
+
+<h2>Quiz Master Dashboard</h2>
+
+<button onclick="createRoom()">Create New Room</button>
+
+<h3 id="roomCode"></h3>
+
+<script>
+function createRoom() {
+  const code = Math.random().toString(36).substring(2, 6).toUpperCase();
+  firebase.database().ref("rooms/" + code).set({
+    status: "waiting",
+    createdAt: Date.now()
+  });
+  document.getElementById("roomCode").innerText =
+    "Room Code: " + code;
+}
+</script>
+
+</body>
+</html>
