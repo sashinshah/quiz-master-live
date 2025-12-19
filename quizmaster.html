@@ -4,8 +4,6 @@
   <title>Quiz Master</title>
   <hr>
 
-  <h3>SASHIN ON STAGE</h3>
-
 <input id="quizTitle" placeholder="Quiz Title">
 <br>
 <button onclick="saveBranding()">Save Branding</button>
@@ -119,6 +117,17 @@
 <button onclick="addTeam()">Add Team</button>
 <ul id="teamList"></ul>
 <hr>
+<hr>
+
+<h3>📂 Import Quiz (CSV)</h3>
+
+<input type="file" id="quizFile" accept=".csv">
+<br><br>
+
+<button onclick="loadQuizFile()">Load Quiz</button>
+<button onclick="nextQuestion()">Next Question</button>
+
+<p id="quizImportStatus"></p>
 
 <h3>Round Control</h3>
 
@@ -524,6 +533,57 @@ function saveBranding() {
 
   document.getElementById("brandingStatus").innerText =
     "Branding saved";
+}
+/* ---------- QUIZ IMPORT ---------- */
+let quizData = [];
+let currentQuestionIndex = -1;
+
+function loadQuizFile() {
+  const file = document.getElementById("quizFile").files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split("\n");
+    quizData = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(",");
+      if (parts.length < 3) continue;
+
+      quizData.push({
+        type: parts[0].trim().toLowerCase(),
+        question: parts[1].trim(),
+        answer: parts[2].trim()
+      });
+    }
+
+    currentQuestionIndex = -1;
+    document.getElementById("quizImportStatus").innerText =
+      quizData.length + " questions loaded";
+  };
+
+  reader.readAsText(file);
+}
+
+function nextQuestion() {
+  if (!quizData.length) return;
+
+  currentQuestionIndex++;
+  if (currentQuestionIndex >= quizData.length) {
+    document.getElementById("quizImportStatus").innerText =
+      "Quiz completed";
+    return;
+  }
+
+  const q = quizData[currentQuestionIndex];
+
+  document.getElementById("roundType").value = q.type;
+  document.getElementById("questionText").value = q.question;
+  document.getElementById("correctAnswer").value = q.answer;
+
+  document.getElementById("quizImportStatus").innerText =
+    "Question " + (currentQuestionIndex + 1);
 }
 
 </script>
