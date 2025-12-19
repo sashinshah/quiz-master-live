@@ -27,6 +27,21 @@
 <button onclick="addTeam()">Add Team</button>
 
 <ul id="teamList"></ul>
+<hr>
+
+<h3>Players Joined</h3>
+<table border="1" width="100%" style="border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>WhatsApp</th>
+      <th>Team</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody id="playerList"></tbody>
+</table>
+
 <script>
 let currentRoom = null;
 
@@ -42,8 +57,8 @@ function createRoom() {
     createdAt: Date.now(),
     teams: {}
   });
-
-  listenForTeams();
+    listenForTeams();
+    listenForPlayers();
 }
 
 function addTeam() {
@@ -68,20 +83,30 @@ function addTeam() {
     });
 }
 
-function listenForTeams() {
+function listenForTeams() 
+function listenForPlayers() {
   firebase.database()
-    .ref("rooms/" + currentRoom + "/teams")
+    .ref("rooms/" + currentRoom + "/players")
     .on("value", snapshot => {
-      const teams = snapshot.val() || {};
-      const list = document.getElementById("teamList");
-      list.innerHTML = "";
-      Object.keys(teams).forEach(team => {
-        const li = document.createElement("li");
-        li.innerText = team;
-        list.appendChild(li);
+      const players = snapshot.val() || {};
+      const tbody = document.getElementById("playerList");
+      tbody.innerHTML = "";
+
+      Object.values(players).forEach(p => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${p.name}</td>
+          <td>${p.whatsapp}</td>
+          <td>${p.team}</td>
+          <td>${p.score}</td>
+        `;
+
+        tbody.appendChild(row);
       });
     });
 }
+
 </script>
 
 
