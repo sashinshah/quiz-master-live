@@ -40,29 +40,10 @@
   </thead>
   <tbody id="playerList"></tbody>
 </table>
+
 <hr>
 
 <h3>Round Control</h3>
-<hr>
-
-<h3>Player Responses</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Team</th>
-      <th>Answer</th>
-    </tr>
-  </thead>
-  <tbody id="responseList"></tbody>
-</table>
-
-<br>
-
-<input id="correctAnswer" placeholder="Correct Answer">
-<button onclick="scoreRound()">Award Points</button>
-
-<p id="scoreStatus"></p>
 
 <select id="roundType">
   <option value="mcq">MCQ (A / B / C / D)</option>
@@ -81,6 +62,54 @@
 
 <p id="roundStatus"></p>
 
+<hr>
+
+<h3>Player Responses</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Team</th>
+      <th>Answer</th>
+    </tr>
+  </thead>
+  <tbody id="responseList"></tbody>
+</table>
+
+<br>
+
+<input id="correctAnswer" placeholder="Correct Answer">
+<button onclick="scoreRound()">Award Points</button>
+
+<p id="scoreStatus"></p>
+
+<hr>
+
+<h3>🏆 Player Leaderboard</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Team</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody id="playerBoard"></tbody>
+</table>
+
+<br>
+
+<h3>🏆 Team Leaderboard</h3>
+<table border="1" width="100%">
+  <thead>
+    <tr>
+      <th>Team</th>
+      <th>Total Score</th>
+    </tr>
+  </thead>
+  <tbody id="teamBoard"></tbody>
+</table>
+
 <script>
 var currentRoom = null;
 
@@ -98,6 +127,7 @@ function createRoom() {
     teams: {},
     players: {}
   });
+
   listenForTeams();
   listenForPlayers();
   listenForResponses();
@@ -146,39 +176,26 @@ function listenForPlayers() {
         var p = players[k];
         var row = document.createElement("tr");
 
-        var td1 = document.createElement("td");
-        td1.innerText = p.name;
-
-        var td2 = document.createElement("td");
-        td2.innerText = p.whatsapp;
-
-        var td3 = document.createElement("td");
-        td3.innerText = p.team;
-
-        var td4 = document.createElement("td");
-        td4.innerText = p.score;
-
-        row.appendChild(td1);
-        row.appendChild(td2);
-        row.appendChild(td3);
-        row.appendChild(td4);
+        ["name","whatsapp","team","score"].forEach(function(key){
+          var td = document.createElement("td");
+          td.innerText = p[key];
+          row.appendChild(td);
+        });
 
         tbody.appendChild(row);
       }
     });
 }
-  /* ---------- ROUND CONTROL ---------- */
+
+/* ---------- ROUND CONTROL ---------- */
 function startRound() {
   if (!currentRoom) return;
-
-  var type = document.getElementById("roundType").value;
-  var question = document.getElementById("questionText").value;
 
   firebase.database()
     .ref("rooms/" + currentRoom + "/round")
     .set({
-      type: type,
-      question: question,
+      type: document.getElementById("roundType").value,
+      question: document.getElementById("questionText").value,
       status: "open",
       startedAt: Date.now()
     });
@@ -197,81 +214,45 @@ function closeRound() {
   document.getElementById("roundStatus").innerText =
     "Answering CLOSED";
 }
+
 /* ---------- RESPONSES ---------- */
 function listenForResponses() {
   firebase.database()
     .ref("rooms/" + currentRoom + "/responses")
     .on("value", function(snapshot) {
-      const responses = snapshot.val() || {};
-      const tbody = document.getElementById("responseList");
+      var responses = snapshot.val() || {};
+      var tbody = document.getElementById("responseList");
       tbody.innerHTML = "";
 
       for (var k in responses) {
         var r = responses[k];
         var row = document.createElement("tr");
 
-        var td1 = document.createElement("td");
-        td1.innerText = getPlayerName(k);
+        ["player","team","answer"].forEach(function(field){
+          var td = document.createElement("td");
+          td.innerText =
+            field === "player" ? "Player" : r[field];
+          row.appendChild(td);
+        });
 
-        var td2 = document.createElement("td");
-        td2.innerText = r.team;
-
-        var td3 = document.createElement("td");
-        td3.innerText = r.answer;
-
-        row.appendChild(td1);
-        row.appendChild(td2);
-        row.appendChild(td3);
         tbody.appendChild(row);
       }
     });
 }
 
-<h3>🏆 Player Leaderboard</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Player</th>
-      <th>Team</th>
-      <th>Score</th>
-    </tr>
-  </thead>
-  <tbody id="playerBoard"></tbody>
-</table>
-
-<br>
-
-<h3>🏆 Team Leaderboard</h3>
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>Team</th>
-      <th>Total Score</th>
-    </tr>
-  </thead>
-  <tbody id="teamBoard"></tbody>
-</table>
-
-
-/* ---------- GET PLAYER NAME ---------- */
-function getPlayerName(id) {
-  return "Player";
-}
-
-/* ---------- SCORE ROUND ---------- */
+/* ---------- SCORING ---------- */
 function scoreRound() {
-  var correct = document.getElementById("correctAnswer").value.trim();
+  var correct = document.getElementById("correctAnswer").value.trim().toLowerCase();
   if (!correct) return;
 
   firebase.database()
     .ref("rooms/" + currentRoom + "/responses")
     .once("value", function(snapshot) {
-      const responses = snapshot.val() || {};
+      var responses = snapshot.val() || {};
 
       for (var pid in responses) {
         if (
-          String(responses[pid].answer).toLowerCase() ===
-          correct.toLowerCase()
+          String(responses[pid].answer).toLowerCase() === correct
         ) {
           awardPoints(pid, responses[pid].team);
         }
@@ -282,102 +263,69 @@ function scoreRound() {
     });
 }
 
-/* ---------- AWARD POINTS ---------- */
 function awardPoints(playerId, team) {
-  const playerRef =
-    firebase.database().ref(
-      "rooms/" + currentRoom + "/players/" + playerId + "/score"
-    );
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/players/" + playerId + "/score")
+    .transaction(function(s){ return (s || 0) + 10; });
 
-  playerRef.transaction(function(score) {
-    return (score || 0) + 10;
-  });
-
-  const teamRef =
-    firebase.database().ref(
-      "rooms/" + currentRoom + "/teams/" + team + "/score"
-    );
-
-  teamRef.transaction(function(score) {
-    return (score || 0) + 10;
-  });
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams/" + team + "/score")
+    .transaction(function(s){ return (s || 0) + 10; });
 }
-/* ---------- PLAYER LEADERBOARD ---------- */
+
+/* ---------- LEADERBOARDS ---------- */
 function listenForPlayerBoard() {
   firebase.database()
     .ref("rooms/" + currentRoom + "/players")
     .on("value", function(snapshot) {
-      const players = snapshot.val() || {};
-      const list = [];
+      var players = snapshot.val() || {};
+      var list = Object.values(players)
+        .sort(function(a,b){ return b.score - a.score; });
 
-      for (var id in players) {
-        list.push(players[id]);
-      }
-
-      list.sort(function(a, b) {
-        return b.score - a.score;
-      });
-
-      const tbody = document.getElementById("playerBoard");
+      var tbody = document.getElementById("playerBoard");
       tbody.innerHTML = "";
 
-      list.forEach(function(p) {
-        const row = document.createElement("tr");
-
-        const td1 = document.createElement("td");
-        td1.innerText = p.name;
-
-        const td2 = document.createElement("td");
-        td2.innerText = p.team;
-
-        const td3 = document.createElement("td");
-        td3.innerText = p.score;
-
-        row.appendChild(td1);
-        row.appendChild(td2);
-        row.appendChild(td3);
-
+      list.forEach(function(p){
+        var row = document.createElement("tr");
+        ["name","team","score"].forEach(function(k){
+          var td = document.createElement("td");
+          td.innerText = p[k];
+          row.appendChild(td);
+        });
         tbody.appendChild(row);
       });
     });
 }
 
-/* ---------- TEAM LEADERBOARD ---------- */
 function listenForTeamBoard() {
   firebase.database()
     .ref("rooms/" + currentRoom + "/teams")
     .on("value", function(snapshot) {
-      const teams = snapshot.val() || {};
-      const list = [];
+      var teams = snapshot.val() || {};
+      var list = Object.keys(teams)
+        .map(function(t){
+          return { name:t, score:teams[t].score };
+        })
+        .sort(function(a,b){ return b.score - a.score; });
 
-      for (var t in teams) {
-        list.push({ name: t, score: teams[t].score });
-      }
-
-      list.sort(function(a, b) {
-        return b.score - a.score;
-      });
-
-      const tbody = document.getElementById("teamBoard");
+      var tbody = document.getElementById("teamBoard");
       tbody.innerHTML = "";
 
-      list.forEach(function(t) {
-        const row = document.createElement("tr");
+      list.forEach(function(t){
+        var row = document.createElement("tr");
 
-        const td1 = document.createElement("td");
+        var td1 = document.createElement("td");
         td1.innerText = t.name;
 
-        const td2 = document.createElement("td");
+        var td2 = document.createElement("td");
         td2.innerText = t.score;
 
         row.appendChild(td1);
         row.appendChild(td2);
-
         tbody.appendChild(row);
       });
     });
 }
-
 </script>
 
 </body>
