@@ -26,55 +26,155 @@
 <button onclick="joinRoom()">Join</button>
 
 <p id="status"></p>
+<hr>
+
+<h3 id="question"></h3>
+
+<div id="answerArea"></div>
+
+<p id="playerStatus"></p>
 
 <script>
+var playerRoom = "";
+var playerId = Date.now();
+var playerTeam = "";
+
 const teamSelect = document.getElementById("team");
 
-document.getElementById("code").addEventListener("input", () => {
+document.getElementById("code").addEventListener("input", function() {
   const code = document.getElementById("code").value.toUpperCase();
   if (!code) return;
 
   firebase.database()
     .ref("rooms/" + code + "/teams")
-    .once("value", snap => {
+    .once("value", function(snap) {
       teamSelect.innerHTML =
         '<option value="">Select Team</option>';
       const teams = snap.val() || {};
-      Object.keys(teams).forEach(t => {
+      for (let t in teams) {
         const opt = document.createElement("option");
         opt.value = t;
         opt.innerText = t;
         teamSelect.appendChild(opt);
-      });
+      }
     });
 });
 
 function joinRoom() {
-  const code = document.getElementById("code").value.toUpperCase();
+  playerRoom = document.getElementById("code").value.toUpperCase();
   const name = document.getElementById("name").value;
   const whatsapp = document.getElementById("whatsapp").value;
-  const team = teamSelect.value;
+  playerTeam = teamSelect.value;
 
-  if (!team) {
-    alert("Select a team");
-    return;
-  }
-
-  const id = Date.now();
+  if (!playerRoom || !name || !playerTeam) return;
 
   firebase.database()
-    .ref("rooms/" + code + "/players/" + id)
+    .ref("rooms/" + playerRoom + "/players/" + playerId)
     .set({
       name,
       whatsapp,
-      team,
+      team: playerTeam,
       score: 0
     });
 
-  document.getElementById("status").innerText =
-    "Joined Team " + team;
+  document.getElementById("playerStatus").innerText =
+    "Waiting for question...";
+
+  listenForRound();
+}
+
+/* ---------- LISTEN FOR ROUND ---------- */
+function listenForRound() {
+  firebase.database()
+    .ref("rooms/" + playerRoom + "/round")
+    .on("value", function(snapshot) {
+      const round = snapshot.val();
+      if (!round) return;
+
+      document.getElementById("question").innerText =
+        round.question || "";
+
+      if (round.status === "open") {
+        showAnswerInput(round.type);
+      } else {
+        document.getElementById("answerArea").innerHTML =
+          "<em>Answering closed</em>";
+      }
+    });
+}
+
+/* ---------- SHOW ANSWER UI ---------- */
+function showAnswerInput(type) {
+  const area = document.getElementById("answerArea");
+  area.innerHTML = "";
+
+  if (type === "mcq") {
+    ["A","B","C","D"].forEach(function(opt) {
+      const btn = document.createElement("button");
+      btn.innerText = opt;
+      btn.onclick = function() {
+        submitAnswer(opt);
+      };
+      area.appendChild(btn);
+    });
+  }
+
+  if (type === "text") {
+    const input = document.createElement("input");
+    input.placeholder = "Type answer";
+
+    const btn = document.createElement("button");
+    btn.innerText = "Submit";
+    btn.onclick = function() {
+      submitAnswer(input.value);
+    };
+
+    area.appendChild(input);
+    area.appendChild(btn);
+  }
+
+  if (type === "buzz") {
+    const btn = document.createElement("button");
+    btn.innerText = "BUZZ";
+    btn.onclick = buzz;
+    area.appendChild(btn);
+  }
+}
+
+/* ---------- SUBMIT ANSWER ---------- */
+function submitAnswer(ans) {
+  firebase.database()
+    .ref("rooms/" + playerRoom + "/responses/" + playerId)
+    .set({
+      answer: ans,
+      team: playerTeam,
+      time: Date.now()
+    });
+
+  document.getElementById("playerStatus").innerText =
+    "Answer submitted";
+}
+
+/* ---------- BUZZ ---------- */
+function buzz() {
+  firebase.database()
+    .ref("rooms/" + playerRoom + "/buzz")
+    .transaction(function(current) {
+      if (current === null) {
+        return {
+          playerId: playerId,
+          team: playerTeam,
+          time: Date.now()
+        };
+      }
+      return; // ignore others
+    });
+
+  document.getElementById("playerStatus").innerText =
+    "Buzzed!";
 }
 </script>
+
 
 
 </body>
