@@ -28,7 +28,7 @@
 
 <ul id="teamList"></ul>
 <script>
-let currentRoom = "";
+let currentRoom = null;
 
 function createRoom() {
   const code = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -39,13 +39,23 @@ function createRoom() {
 
   firebase.database().ref("rooms/" + code).set({
     status: "waiting",
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    teams: {}
   });
+
+  listenForTeams();
 }
 
 function addTeam() {
-  const name = document.getElementById("teamName").value;
-  if (!name || !currentRoom) return;
+  const name = document.getElementById("teamName").value.trim();
+  if (!name) {
+    alert("Enter team name");
+    return;
+  }
+  if (!currentRoom) {
+    alert("Create room first");
+    return;
+  }
 
   firebase.database()
     .ref("rooms/" + currentRoom + "/teams/" + name)
@@ -54,18 +64,22 @@ function addTeam() {
   document.getElementById("teamName").value = "";
 }
 
-firebase.database().ref("rooms").on("value", snapshot => {
-  if (!currentRoom) return;
-  const teams = snapshot.val()?.[currentRoom]?.teams || {};
-  const list = document.getElementById("teamList");
-  list.innerHTML = "";
-  Object.keys(teams).forEach(team => {
-    const li = document.createElement("li");
-    li.innerText = team;
-    list.appendChild(li);
-  });
-});
+function listenForTeams() {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams")
+    .on("value", snapshot => {
+      const teams = snapshot.val() || {};
+      const list = document.getElementById("teamList");
+      list.innerHTML = "";
+      Object.keys(teams).forEach(team => {
+        const li = document.createElement("li");
+        li.innerText = team;
+        list.appendChild(li);
+      });
+    });
+}
 </script>
+
 
 </body>
 </html>
