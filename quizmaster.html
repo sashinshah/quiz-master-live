@@ -305,33 +305,40 @@ function loadQuizFile() {
     quizData = [];
     currentQuestionIndex = -1;
 
-    let text = e.target.result;
+    let text = e.target.result
+      .replace(/^\uFEFF/, "") // remove BOM
+      .replace(/\r/g, "");
 
-    // ✅ REMOVE BOM + normalize
-    text = text.replace(/^\uFEFF/, "").replace(/\r/g, "");
+    const lines = text.split("\n").filter(l => l.trim());
+    if (lines.length < 2) {
+      alert("CSV has no data");
+      return;
+    }
 
-    const lines = text.split("\n");
+    // 🔥 READ HEADER
+    const header = lines[0].split(",").map(h => h.trim().toLowerCase());
 
-    for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
-      if (!line) continue;
+    const typeIndex = header.indexOf("type");
+    const questionIndex = header.indexOf("question");
+    const answerIndex = header.indexOf("answer");
 
-      const parts = line.split(",");
+    if (typeIndex === -1 || questionIndex === -1 || answerIndex === -1) {
+      alert("CSV must have headers: type, question, answer");
+      return;
+    }
 
-      // ✅ Skip header row
-      if (parts[0].toLowerCase().trim() === "type") continue;
+    // 🔥 READ DATA ROWS
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(",");
 
-      // ✅ We need at least 3 columns
-      if (parts.length < 3) continue;
-
-      const type = parts[0].trim();
-      const question = parts[1].trim();
-      const answer = parts.slice(2).join(",").trim();
+      if (!parts[typeIndex] || !parts[questionIndex] || !parts[answerIndex]) {
+        continue;
+      }
 
       quizData.push({
-        type,
-        question,
-        answer
+        type: parts[typeIndex].trim(),
+        question: parts[questionIndex].trim(),
+        answer: parts.slice(answerIndex).join(",").trim()
       });
     }
 
@@ -342,13 +349,6 @@ function loadQuizFile() {
   reader.readAsText(file);
 }
 
-
-    quizImportStatus.innerText =
-      "Loaded " + quizData.length + " valid questions";
-  };
-
-  reader.readAsText(file);
-}
 function nextQuestion() {
   if (!quizData.length) {
     quizImportStatus.innerText = "No questions loaded";
@@ -357,42 +357,34 @@ function nextQuestion() {
 
   currentQuestionIndex++;
 
-  while (currentQuestionIndex < quizData.length) {
-    const q = quizData[currentQuestionIndex];
-
-    let rawType = (q.type || "").toString();
-
-    // 🔍 DEBUG (optional – remove later)
-    console.log("RAW TYPE:", rawType);
-
-    let type = rawType
-      .replace(/[^a-zA-Z]/g, "") // 🔥 strips BOM & junk
-      .toLowerCase();
-
-    if (type === "mcq" || type === "m") type = "mcq";
-    else if (type === "text" || type === "t") type = "text";
-    else if (type === "buzz" || type === "b") type = "buzz";
-    else {
-      console.warn("Skipping invalid row:", q);
-      currentQuestionIndex++;
-      continue; // 🔁 skip bad row
-    }
-
-    // ✅ APPLY QUESTION
-    roundType.value = type;
-    questionText.value = q.question;
-    correctAnswer.value = q.answer;
-
-    quizImportStatus.innerText =
-      "Question " + (currentQuestionIndex + 1) +
-      " (" + type.toUpperCase() + ")";
-
+  if (currentQuestionIndex >= quizData.length) {
+    quizImportStatus.innerText = "Quiz completed";
     return;
   }
 
-  quizImportStatus.innerText = "Quiz completed";
-}
+  const q = quizData[currentQuestionIndex];
 
+  let type = q.type
+    .toString()
+    .replace(/[^a-zA-Z]/g, "")
+    .toLowerCase();
+
+  if (type === "mcq" || type === "m") type = "mcq";
+  else if (type === "text" || type === "t") type = "text";
+  else if (type === "buzz" || type === "b") type = "buzz";
+  else {
+    alert("Invalid quiz type found: " + q.type);
+    return;
+  }
+
+  roundType.value = type;
+  questionText.value = q.question;
+  correctAnswer.value = q.answer;
+
+  quizImportStatus.innerText =
+    "Question " + (currentQuestionIndex + 1) +
+    " (" + type.toUpperCase() + ")";
+}
 
 </script>
 
