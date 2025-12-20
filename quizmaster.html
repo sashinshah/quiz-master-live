@@ -98,6 +98,7 @@
   <option value="mcq">MCQ</option>
   <option value="text">Text</option>
   <option value="buzz">Buzz</option>
+  <option value="range">Range</option>
 </select>
 
 <input id="questionText" placeholder="Question">
@@ -227,18 +228,73 @@ function listenForResponses(){
 }
 
 /* SCORING */
-function scoreRound(){
-  var correct = correctAnswer.value.toLowerCase();
-  firebase.database().ref("rooms/"+currentRoom+"/responses").once("value",s=>{
-    var r=s.val()||{};
-    for(let k in r){
-      if(r[k].answer.toLowerCase()===correct){
-        firebase.database().ref("rooms/"+currentRoom+"/players/"+k+"/score").transaction(v=>(v||0)+10);
-        firebase.database().ref("rooms/"+currentRoom+"/teams/"+r[k].team+"/score").transaction(v=>(v||0)+10);
-      }
-    }
-  });
+function scoreRound() {
+  const correctRaw = document.getElementById("correctAnswer").value.trim();
+  if (!correctRaw) return;
+
+  const roundType = document.getElementById("roundType").value;
+  const correct = Number(correctRaw);
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/responses")
+    .once("value", function(snapshot) {
+      const responses = snapshot.val() || {};
+
+      // 🔴 NORMAL QUESTIONS (MCQ / TEXT)
+      if (roundType !== "range") {
+        for (let pid in responses) {
+          if (
+            String(responses[pid].answer).toLowerCase() ===
+            correctRaw.toLowerCase()
+          ) {
+            awardPoints(pid, responses[pid].team, 10);
+          function awardPoints(playerId, team, points = 10) {
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/players/" + playerId + "/score")
+    .transaction(s => (s || 0) + points);
+
+  firebase.database()
+    .ref("rooms/" + currentRoom + "/teams/" + team + "/score")
+    .transaction(s => (s || 0) + points);
 }
+
+      // 🟢 RANGE QUESTION LOGIC
+      let closestDiff = Infinity;
+      let closestTeams = [];
+      let exactTeams = [];
+
+      for (let pid in responses) {
+        const val = Number(responses[pid].answer);
+        if (isNaN(val)) continue;
+
+        const diff = Math.abs(val - correct);
+
+        // 🎯 Exact answer
+        if (diff === 0) {
+          exactTeams.push(responses[pid].team);
+        }
+
+        // 📏 Closest answer
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestTeams = [responses[pid].team];
+        }
+      }
+
+      // 🏆 Award 20 points for exact
+      exactTeams.forEach(team => {
+        awardTeamOnly(team, 20);
+      });
+
+      // 🏆 Award 10 points for closest (if no exact)
+      if (exactTeams.length === 0 && closestTeams.length) {
+        awardTeamOnly(closestTeams[0], 10);
+      }
+
+      scoreStatus.innerText = "Range scoring completed";
+    });
+}
+
 
 /* LEADERBOARDS */
 function listenForPlayerBoard(){
