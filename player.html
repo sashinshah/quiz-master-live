@@ -211,6 +211,18 @@ function showAnswerUI(type) {
     answerArea.appendChild(btn);
   }
 }
+if (type === "range") {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.placeholder = "Enter your estimate";
+
+  const btn = document.createElement("button");
+  btn.innerText = "Submit";
+  btn.onclick = () => submitAnswer(input.value);
+
+  answerArea.appendChild(input);
+  answerArea.appendChild(btn);
+}
 
 /* SUBMIT ANSWER */
 function submitAnswer(answer) {
